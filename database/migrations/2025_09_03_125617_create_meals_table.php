@@ -12,13 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('meals', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('restaurant_id')->index();
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2);
-            $table->integer('image')->nullable();
-            $table->foreignId('restaurant_id')->constrained()->onDelete('cascade');
+            $table->string('image')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->boolean('is_featured')->default(false);
+            $table->decimal('discount_price', 8, 2)->nullable();
             $table->timestamps();
+
+            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
         });
     }
 

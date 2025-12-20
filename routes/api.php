@@ -1,23 +1,22 @@
 <?php
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\RestaurantController;
+use App\Http\Controllers\Api\MealController;
 
-Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+
+// Public Auth Routes
+Route::post('/auth/send-otp', [AuthController::class, 'sendOtp']);
+Route::post('auth/verify-otp', [AuthController::class, 'verifyOtp']);
+
+
+// Protected Routes
+Route::middleware(['auth:sanctum', 'customer'])->group(function () { 
     Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/restaurants', [RestaurantController::class, 'index']);
+    Route::get('/restaurants/{restaurant}/meals', [MealController::class, 'index']);
+    Route::get('/my-orders', [OrderController::class, 'myOrders']);
+
 });
 
-// Restaurant Owner routes
-Route::middleware(['auth:sanctum', 'role:restaurant_owner'])->group(function () {
-    Route::get('/restaurant/orders', [OrderController::class, 'restaurantOrders']);
-});
-
-// Driver routes
-Route::middleware(['auth:sanctum', 'role:driver'])->group(function () {
-    Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
-    Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus']);
-});
-
-// Admin routes
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-    Route::get('/orders', [OrderController::class, 'index']);
-});

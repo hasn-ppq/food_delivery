@@ -25,6 +25,7 @@ class DriverPanelProvider extends PanelProvider
     {
         return $panel
             ->id('driver')
+            ->login()
             ->path('driver')
             ->colors([
                 'primary' => Color::Amber,
