@@ -26,6 +26,7 @@ class RestaurantPanelProvider extends PanelProvider
         return $panel
             ->id('restaurant')
             ->path('restaurant')
+            ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])

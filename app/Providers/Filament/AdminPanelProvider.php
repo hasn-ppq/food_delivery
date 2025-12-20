@@ -56,7 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
                  'auth',
                  'verified',
-                 'role:admin',
+                 'role_id:1',
                  
             ]);
     }

@@ -12,12 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->foreignId('meal_id')->constrained()->onDelete('cascade');
+           $table->bigIncrements('id');
+            $table->unsignedBigInteger('order_id')->index();
+            $table->unsignedBigInteger('meal_id')->nullable()->index();
+            $table->string('meal_name');
             $table->integer('quantity')->default(1);
-            $table->decimal('price', 8, 2); // سعر الوجبة وقت الطلب
+            $table->decimal('price', 8, 2); // price at time of order
+            $table->decimal('total', 10, 2);
             $table->timestamps();
+
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('meal_id')->references('id')->on('meals')->onDelete('set null');
         });
     }
 

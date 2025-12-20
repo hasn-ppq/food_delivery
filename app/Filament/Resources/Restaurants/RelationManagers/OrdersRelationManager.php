@@ -12,7 +12,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Tables\Columns\BadgeColumn;
 
 class OrdersRelationManager extends RelationManager
 {
@@ -45,7 +44,8 @@ class OrdersRelationManager extends RelationManager
                     ->money('USD')
                     ->sortable(),
 
-                   BadgeColumn::make('status')
+                   TextColumn::make('status')
+                    ->badge()
                     ->label('الحالة')
                     ->colors([
                         'warning' => 'pending',

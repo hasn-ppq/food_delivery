@@ -7,7 +7,9 @@ use App\Filament\Resources\Orders\Pages\EditOrder;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Schemas\OrderForm;
 use App\Filament\Resources\Orders\Tables\OrdersTable;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Builder;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -38,13 +40,19 @@ class OrderResource extends Resource
             //
         ];
     }
+     public static function getEloquentQuery(): Builder
+    {
+        // حتى يظهر فقط الطلبات التابعة للمطعم الحالي
+        $restaurantId = auth::user()->restaurant->id ?? null;
+        return parent::getEloquentQuery()->where('restaurant_id', $restaurantId);
+    }
+    
 
     public static function getPages(): array
     {
         return [
             'index' => ListOrders::route('/'),
-            'create' => CreateOrder::route('/create'),
-            'edit' => EditOrder::route('/{record}/edit'),
+            
         ];
     }
 }
