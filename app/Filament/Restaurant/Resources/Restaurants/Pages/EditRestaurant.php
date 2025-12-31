@@ -10,10 +10,5 @@ class EditRestaurant extends EditRecord
 {
     protected static string $resource = RestaurantResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
+   
 }

@@ -7,14 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Restaurant;
 use Illuminate\Support\Facades\DB;
 
-
-
-
-
-
 class RestaurantController extends Controller
 {
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $request->validate([
             'lat' => 'required|numeric',
@@ -23,24 +18,36 @@ class RestaurantController extends Controller
 
         $lat = $request->lat;
         $lng = $request->lng;
-
-        // Haversine Formula
+        $radius = $request->radius ?? 10;
         $restaurants = Restaurant::select(
-                'restaurants.*',
+                 'id',
+                 'name',
+                 'address',
+                 'lat',
+                 'lng',
+                 'cover_image',
+                'delivery_price_default',
+                'min_order_price',
                 DB::raw("
                     (6371 * acos(
-                        cos(radians($lat)) *
+                        cos(radians(?)) *
                         cos(radians(lat)) *
-                        cos(radians(lng) - radians($lng)) +
-                        sin(radians($lat)) *
+                        cos(radians(lng) - radians(?)) +
+                        sin(radians(?)) *
                         sin(radians(lat))
                     )) AS distance
                 ")
             )
+            ->setBindings([$lat, $lng, $lat])
             ->where('status', 'open')
+            ->whereNotNull('lat')
+            ->whereNotNull('lng')
+            ->having('distance', '<=', $radius)
             ->orderBy('distance')
-            ->get();
+            ->paginate(10);
 
-        return response()->json($restaurants);
+        return response()->json([
+            'restaurants' => $restaurants
+        ]);
     }
 }

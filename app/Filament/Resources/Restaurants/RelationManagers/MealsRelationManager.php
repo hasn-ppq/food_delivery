@@ -24,32 +24,7 @@ class MealsRelationManager extends RelationManager
     protected static string $relationship = 'meals';
      protected static ?string $title = 'الوجبات';
 
-    public function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                 TextInput::make('name')
-                    ->label('اسم الوجبة')
-                    ->required()
-                    ->maxLength(255),
-
-                 Textarea::make('description')
-                    ->label('الوصف')
-                    ->maxLength(500),
-
-                 TextInput::make('price')
-                    ->label('السعر')
-                    ->numeric()
-                    ->required(),
-
-                 FileUpload::make('image')
-                    ->label('صورة الوجبة')
-                    ->image()
-                    ->directory('meals')
-                    ->maxSize(2048),
-            ]);
-    }
-
+  
     public function table(Table $table): Table
     {
         return $table
@@ -75,18 +50,14 @@ class MealsRelationManager extends RelationManager
             ->filters([
                 //
             ])
-            ->headerActions([
-                CreateAction::make(),
-                AssociateAction::make(),
-            ])
+            
+            
             ->recordActions([
                 EditAction::make(),
-                DissociateAction::make(),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DissociateBulkAction::make(),
                     DeleteBulkAction::make(),
                 ]),
             ]);

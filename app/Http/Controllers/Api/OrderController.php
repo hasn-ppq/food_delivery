@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Restaurant;
 use App\Models\Meal;
 use App\Models\OrderItem;
+use Carbon\Carbon;
+
+
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
@@ -16,13 +19,6 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user(); // الكاستمر
-
-        // 1️⃣ تحقق أساسي
-        if ($user->role->slug !== 'customer') {
-            return response()->json([
-                'message' => 'غير مصرح'
-            ], 403);
-        }
 
         // 2️⃣ Validation
         $request->validate([
@@ -79,22 +75,27 @@ class OrderController extends Controller
                     throw new \Exception('وجبة غير صالحة');
                 }
 
-                $itemTotal = $meal->price * $item['quantity'];
+                $price = $meal->discount_price ?? $meal->price;
+                $itemTotal = $price * $item['quantity'];
                 $totalPrice += $itemTotal;
 
                 OrderItem::create([
-                    'order_id' => $order->id,
-                    'meal_id' => $meal->id,
-                    'meal_name' => $meal->name,
-                    'quantity' => $item['quantity'],
-                    'price' => $meal->price,
-                    'total' => $itemTotal,
+                     'order_id' => $order->id,
+                     'meal_id' => $meal->id,
+                     'meal_name' => $meal->name,
+                     'quantity' => $item['quantity'],
+                     'price' => $price,
+                     'total' => $itemTotal,
                 ]);
             }
-
+                 if ($totalPrice < $restaurant->min_order_price) {
+                     throw new \Exception('الحد الأدنى للطلب هو ' . $restaurant->min_order_price);
+                 }
+            $totalPrice += $restaurant->delivery_price_default;
             // 6️⃣ تحديث السعر النهائي
             $order->update([
-                'total_price' => $totalPrice
+                 'total_price' => $totalPrice,
+                 'delivery_price' => $restaurant->delivery_price_default,
             ]);
 
             DB::commit();
@@ -119,16 +120,73 @@ class OrderController extends Controller
 {
     $user = auth::user();
 
-    // تأكد انه كاستمر
-    if ($user->role->slug !== 'customer') {
+    $orders = Order::with(['restaurant:id,name', 'items'])
+        ->where('customer_id', $user->id)
+        ->whereNotIn('status', ['delivered', 'canceled'])
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json([
+        'orders' => $orders
+    ]);
+}
+public function show(Order $order)
+{
+    $user = auth::user();
+
+    // تأكد انه الطلب يخص هذا الكاستمر
+    if ($order->customer_id !== $user->id) {
         return response()->json([
             'message' => 'غير مصرح'
         ], 403);
     }
 
+    // تحميل العلاقات
+    $order->load([
+        'restaurant:id,name,address,lat,lng',
+        'items'
+    ]);
+
+    return response()->json([
+        'order' => $order
+    ]);
+}
+
+  public function cancel(Order $order)
+{
+    $user = auth::user();
+
+    // تأكدالطلب إله
+    if ( $order->customer_id !== $user->id) {
+        return response()->json([
+            'message' => 'غير مصرح'
+        ], 403);
+    }
+
+    // تحقق من حالة الطلب
+    if (!in_array($order->status, ['pending', 'accepted'])) {
+        return response()->json([
+            'message' => 'لا يمكن إلغاء الطلب في هذه المرحلة'
+        ], 422);
+    }
+
+    // إلغاء الطلب
+    $order->update([
+        'status' => 'canceled',
+        'canceled_reason' => 'Canceled by customer',
+    ]);
+
+    return response()->json([
+        'message' => 'تم إلغاء الطلب بنجاح'
+    ]);
+}
+public function myOrdersHistory()
+{
+    $user = auth::user();
+
     $orders = Order::with(['restaurant:id,name', 'items'])
         ->where('customer_id', $user->id)
-        ->whereNotIn('status', ['delivered', 'canceled'])
+        ->whereIn('status', ['delivered', 'canceled'])
         ->orderBy('created_at', 'desc')
         ->get();
 

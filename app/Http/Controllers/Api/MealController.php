@@ -20,10 +20,25 @@ class MealController extends Controller
 
         $meals = $restaurant->meals()
             ->where('status', 'active')
+             ->selectRaw('
+                id,
+                name,
+                image,
+                price,
+                discount_price,
+                COALESCE(discount_price, price) as final_price,
+                is_featured
+            ')
             ->orderBy('is_featured', 'desc')
             ->orderBy('name')
             ->get();
 
-        return response()->json($meals);
+        return response()->json([
+            'restaurant' => [
+                'id' => $restaurant->id,
+                'name' => $restaurant->name,
+            ],
+            'meals' => $meals
+        ]);
     }
 }

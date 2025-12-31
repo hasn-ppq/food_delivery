@@ -5,6 +5,7 @@ namespace App\Filament\Restaurant\Resources\Restaurants\Pages;
 use App\Filament\Restaurant\Resources\Restaurants\RestaurantResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ListRestaurants extends ListRecords
 {
@@ -13,7 +14,7 @@ class ListRestaurants extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->visible(fn () => Auth::user()->restaurants === null),
         ];
     }
 }

@@ -54,7 +54,7 @@ class RestaurantPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                  'auth',
-                 'role:restaurant_owner',
+                 'role:owner',
             ]);
     }
 }

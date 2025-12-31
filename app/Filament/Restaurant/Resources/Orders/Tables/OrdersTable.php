@@ -9,6 +9,8 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
+ use Filament\Tables\Actions\ViewAction;
+
 use App\Events\OrderStatusChanged;
 
 class OrdersTable
@@ -42,25 +44,37 @@ class OrdersTable
                 //
             ])
             ->recordActions([
-                 Action::make('قبول')
-                    ->visible(fn($record) => $record->status === 'pending')
+                   Action::make('accept')
+                    ->label('قبول')
                     ->color('success')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'preparing']);
-                        event(new OrderStatusChanged($record));
-                    }),
-                     Action::make('تم- التحضير')
-                    ->visible(fn($record) => $record->status === 'preparing')
-                    ->color('success')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'on_the_way']);
-                        event(new OrderStatusChanged($record));
-                    }),
-                    EditAction::make()
-                
-                
-           
-            ]);
+                    ->visible(fn ($record) => $record->status === 'pending')
+                    ->action(fn ($record) =>
+                        $record->update(['status' => 'accepted'])
+                    ),
+
+                // بدء الطبخ
+                Action::make('cook')
+                    ->label('بدء الطبخ')
+                    ->color('primary')
+                    ->visible(fn ($record) => $record->status === 'accepted')
+                    ->action(fn ($record) =>
+                        $record->update(['status' => 'cooking'])
+                    ),
+
+                // جاهز للاستلام
+                Action::make('ready')
+                    ->label('جاهز')
+                    ->color('warning')
+                    ->visible(fn ($record) => $record->status === 'cooking')
+                    ->action(fn ($record) =>
+                        $record->update(['status' => 'ready_to_receive'])
+                    ),
+
+                // عرض التفاصيل
+               EditAction::make('edit')
+                    ->label('تفاصيل الطلب'),
+                ]);
+        
 
     }
 }
