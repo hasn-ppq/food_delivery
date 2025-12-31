@@ -1,7 +1,6 @@
 <?php
 use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\RestaurantController;
 use App\Http\Controllers\Api\MealController;
 
