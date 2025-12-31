@@ -17,16 +17,7 @@ class OrdersRelationManager extends RelationManager
 {
     protected static string $relationship = 'orders';
 
-    public function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                TextInput::make('id')
-                    ->required()
-                    ->maxLength(255),
-            ]);
-    }
-
+  
     public function table(Table $table): Table
     {
         return $table

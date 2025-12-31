@@ -15,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Filament\Facades\Filament;
 use App\Filament\Restaurant\Resources\Orders\RelationManagers\OrderItemRelationManager;
 
 class OrderResource extends Resource
@@ -43,20 +44,16 @@ class OrderResource extends Resource
         ];
     }
     
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->whereHas('restaurant', function ($query) {
-                $query->where('user_id', auth::id());
-            });
-    }
+   
+
+    
 
     public static function getPages(): array
     {
         return [
             'index' => ListOrders::route('/'),
             //'create' => CreateOrder::route('/create'),
-            'edit' => EditOrder::route('/{record}/edit'),
+           'edit' => EditOrder::route('/{record}/edit'),
         ];
     }
 }

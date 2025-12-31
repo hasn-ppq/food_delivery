@@ -13,6 +13,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class RestaurantResource extends Resource
 {
@@ -20,7 +22,7 @@ class RestaurantResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'Restaurant';
 
     public static function form(Schema $schema): Schema
     {
@@ -38,6 +40,12 @@ class RestaurantResource extends Resource
             //
         ];
     }
+   
+    public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()
+        ->where('owner_id', Auth::id());
+}
 
     public static function getPages(): array
     {

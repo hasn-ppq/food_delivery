@@ -1,35 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Order;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
 
-abstract class Controller
+class Controller extends BaseController
 {
-    public function cancel(Request $request)
-    {
-        $request->validate([
-            'restaurant_id'=>'required',
-            'order_id'=>'required',
-           
-        ]);
-        $user=Auth::user();
-        if($user->role->slug!=='customer'){
-            return response()->json([
-                'message'=>'لا يجوز الدخول'
-            ],403);
-        }
-
-        $order=Order::where('id',$request->order_id);
-
-        if(!$order){
-            return response()->json(['message'=>'الطلب غير موجود'],404);
-        }
-         $order->update([
-                'status'=>'canceled'
-            ]);
-        return response()->json(['massage'=>'تم الغاء الطلب']);
-    }
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 }

@@ -10,20 +10,7 @@ class OrderForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-               
-                Select::make('status')
-                    ->options([
-            'pending' => 'Pending',
-            'preparing' => 'Preparing',
-            'on_the_way' => 'On the way',
-            'delivered' => 'Delivered',
-            'cancelled' => 'Cancelled',
-        ])
-                    ->default('pending')
-                    ->required(),
-               
-            ]);
+        return $schema;
+            
     }
 }

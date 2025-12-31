@@ -55,8 +55,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                  'auth',
-                 'verified',
-                 'role_id:1',
+                 'role:admin'
+                 
+                 
                  
             ]);
     }

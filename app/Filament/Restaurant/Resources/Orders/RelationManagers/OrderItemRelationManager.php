@@ -32,32 +32,23 @@ class OrderItemRelationManager extends RelationManager
             ->recordTitleAttribute('title')
             ->columns([
 
-                    TextColumn::make('order_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('meal.name')
-                    ->numeric()
-                    ->sortable(),
+                     TextColumn::make('meal_name')
+                    ->label('Meal'),
+
                 TextColumn::make('quantity')
-                    ->numeric()
                     ->sortable(),
+
                 TextColumn::make('price')
-                    ->money()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
+                    ->money('USD'),
+
+                TextColumn::make('total')
+                    ->money('USD'),
+            ]) 
             ->filters([
                 //
             ])
             ->headerActions([
-                CreateAction::make(),
+               
                 AssociateAction::make(),
             ])
             ->recordActions([

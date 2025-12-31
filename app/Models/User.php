@@ -46,6 +46,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'otp_code',
     ];
 
     /**
@@ -67,7 +68,7 @@ class User extends Authenticatable
 
     public function restaurants()
 {
-    return $this->hasMany(Restaurant::class, 'owner_id');
+    return $this->hasOne(Restaurant::class, 'owner_id');
 }
 
     public function ordersAsCustomer()
