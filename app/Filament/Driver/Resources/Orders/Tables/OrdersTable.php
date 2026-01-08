@@ -2,14 +2,18 @@
 
 namespace App\Filament\Driver\Resources\Orders\Tables;
 
+use App\Filament\Resources\Meals\Pages\EditMeal;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use App\Models\Order;
+use Filament\Actions\EditAction;
 use Illuminate\Support\Facades\Auth;
-use App\Events\OrderStatusChanged;
+use Filament\Notifications\Notification;
+
 
 
 class OrdersTable
@@ -18,43 +22,61 @@ class OrdersTable
     {
         return $table
             ->columns([
-                 TextColumn::make('id')->label('رقم الطلب'),
-                 TextColumn::make('restaurant.name')->label('المطعم'),
-                 TextColumn::make('customer.name')->label('الزبون'),
-                 TextColumn::make('status')->label('الحالة'),
-                 TextColumn::make('total')->label('المجموع')->money('IQD'),
-            ])
+                TextColumn::make('id')->label('#'),
+                TextColumn::make('restaurant.name')->label('المطعم'),
+                TextColumn::make('customer.name')->label('الزبون'),
+                TextColumn::make('total_price')->money('IQD'),
+                TextColumn::make('customer_address')->label('عنوان الزبون'),
+                TextColumn::make('created_at')->since(),
+        ])
             ->filters([
                 //
             ])
-           
             ->recordActions([
-               EditAction::make(),
-                 Action::make('استلام')
-                    ->visible(fn($record) => $record->status === 'preparing' && $record->driver_id)
-                    ->color('info')
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => 'on_the_way',
-                            'driver_id' => Auth::id(),
-                        ]);
-                        event(new OrderStatusChanged($record));
-                    }),
+               EditAction::make('تفاصيل الطلب')
+               ->label('تفاصيل الطلب'),
 
-                Action::make('تم التوصيل')
-                    ->visible(fn($record) => $record->status === 'on_the_way' && $record->driver_id === Auth::id())
-                    ->color('success')
-                    ->action(function ($record) {
-                        $record->update([
-                            'status' => 'delivered',
-                        ]);
-                        event(new OrderStatusChanged($record));
-                    }),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+               Action::make('accept')
+    ->label('استلام الطلب')
+    ->color('success')
+    ->requiresConfirmation()
+    ->action(function (Order $record) {
+
+        $driverId = Auth::id();
+
+        // عدد الطلبات الحالية للدرايفر
+        $activeOrdersCount = Order::where('delivery_id', $driverId)
+            ->whereIn('status', ['on_the_way']) // أو statuses اللي تعتبرها فعالة
+            ->count();
+
+        if ($activeOrdersCount >= 3) {
+            Notification::make()
+                ->title('لا يمكن استلام الطلب')
+                ->body('الحد الأقصى للطلبات النشطة هو 3')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        // قبول الطلب
+        $record->update([
+            'delivery_id' => $driverId,
+            'status' => 'on_the_way',
+            'delivery_assigned_at' => now(),
+        ]);
+
+        Notification::make()
+            ->title('تم استلام الطلب بنجاح')
+            ->success()
+            ->send();
+    })
+    ->visible(fn (Order $record) =>
+        $record->status === 'ready_to_receive' &&
+        $record->delivery_id === null
+),
+              
+            
             ]);
     }
 }

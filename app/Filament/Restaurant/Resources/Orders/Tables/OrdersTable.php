@@ -21,7 +21,7 @@ class OrdersTable
             ->columns([
                  TextColumn::make('id')->label('رقم الطلب'),
                 TextColumn::make('customer.name')->label('الزبون'),
-                TextColumn::make('total')->label('المجموع')->money('IQD'),
+                TextColumn::make('total_price')->label('المجموع')->money('IQD'),
                 TextColumn::make('status')
                 ->badge()
                     ->label('الحالة')

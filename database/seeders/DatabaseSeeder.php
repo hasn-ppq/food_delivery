@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 use Database\Seeders\RolesSeeder;
 use Database\Seeders\UserSeeder;
+use Database\Seeders\CustomerOrderSeeder;
 
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -18,7 +19,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
         RolesSeeder::class,
         UserSeeder::class,
+        CustomerDriverSeeder::class,
         RestaurantSeeder::class,
+       
+
     ]);
     }
 }

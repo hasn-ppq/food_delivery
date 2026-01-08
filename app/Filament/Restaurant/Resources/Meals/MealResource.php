@@ -47,7 +47,7 @@ class MealResource extends Resource
 public static function getEloquentQuery(): Builder
 {
     return parent::getEloquentQuery()
-        ->where('restaurant_id', Auth::user()->restaurant->id);
+        ->where('restaurant_id', Auth::user()->restaurants->id);
 }
 
 
