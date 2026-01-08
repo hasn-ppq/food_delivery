@@ -70,7 +70,7 @@ class RestaurantSeeder extends Seeder
             'total_price' => 22.98,
             'delivery_price' => 5.00,
             'payment_method' => 'cash',
-            'payment_status' => 'pending',
+            'payment_status' => 'unpaid',
             'status' => 'pending',
             'customer_address' => '456 Customer Street, City, Country',
             'customer_lat' => 40.7128,

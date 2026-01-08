@@ -54,7 +54,7 @@ class DriverPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                  'auth',
-                'role:driver',
+                'role:delivery',
             ]);
     }
 }

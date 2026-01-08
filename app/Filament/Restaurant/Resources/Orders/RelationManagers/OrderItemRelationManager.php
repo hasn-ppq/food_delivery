@@ -39,28 +39,14 @@ class OrderItemRelationManager extends RelationManager
                     ->sortable(),
 
                 TextColumn::make('price')
-                    ->money('USD'),
+                    ->money('IQD'),
 
                 TextColumn::make('total')
-                    ->money('USD'),
-            ]) 
-            ->filters([
-                //
-            ])
-            ->headerActions([
-               
-                AssociateAction::make(),
-            ])
-            ->recordActions([
-              
-              
-                DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DissociateBulkAction::make(),
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+                    ->money('IQD'),
+            ]) ;
+           
+        
+            
+            
     }
 }
