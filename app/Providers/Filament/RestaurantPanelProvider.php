@@ -27,9 +27,15 @@ class RestaurantPanelProvider extends PanelProvider
             ->id('restaurant')
             ->path('restaurant')
             ->login()
+            ->authGuard('web')
             ->colors([
                 'primary' => Color::Amber,
             ])
+               ->databaseNotifications()
+              
+              ->databaseNotificationsPolling(null)
+              
+        
             ->discoverResources(in: app_path('Filament/Restaurant/Resources'), for: 'App\Filament\Restaurant\Resources')
             ->discoverPages(in: app_path('Filament/Restaurant/Pages'), for: 'App\Filament\Restaurant\Pages')
             ->pages([
@@ -39,6 +45,7 @@ class RestaurantPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -55,6 +62,7 @@ class RestaurantPanelProvider extends PanelProvider
                 Authenticate::class,
                  'auth',
                  'role:owner',
+                  'active'
             ]);
     }
 }

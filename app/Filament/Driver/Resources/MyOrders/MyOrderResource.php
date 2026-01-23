@@ -46,11 +46,20 @@ class MyOrderResource extends Resource
             ItemsRelationManager::class,
         ];
     }
-    public static function getEloquentQuery(): Builder
+  public static function getEloquentQuery(): Builder
 {
-    return Order::query()->where('delivery_id', Auth::id())
-            ->orderBy('created_at', 'desc');
+    $query = parent::getEloquentQuery()
+        ->where('delivery_id', Auth::id());
+
+    // نفحص إذا في request parameter
+    $status = request()->query('status');
+
+    if ($status) {
+        $query->where('status', $status);
     }
+
+    return $query->orderByDesc('created_at');
+}
 
     public static function getPages(): array
     {

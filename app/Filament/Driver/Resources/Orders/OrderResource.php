@@ -27,7 +27,7 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static ?string $slug = 'ready-orders';
-    protected static ?string $navigationLabel = 'الطلبات الجاهزة';
+    protected static ?string $navigationLabel = 'الطلبات المتاحة';
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
@@ -46,26 +46,29 @@ class OrderResource extends Resource
             itemsRelationManager::class,
         ];
     }
-public static function getEloquentQuery(): Builder
+    protected function getTableQuery()
 {
     $driverLat = Auth::user()->lat;
     $driverLng = Auth::user()->lng;
 
-    $query = Order::select('*')
+    return Order::query()
+        ->where('status', 'ready_to_receive')
+        ->whereNull('delivery_id')
+        ->join('restaurants', 'orders.restaurant_id', '=', 'restaurants.id')
+        ->select('orders.*')
         ->selectRaw("
-            (6371 * acos(
-                cos(radians(?)) *
-                cos(radians(customer_lat)) *
-                cos(radians(customer_lng) - radians(?)) +
-                sin(radians(?)) *
-                sin(radians(customer_lat))
-            )) AS distance
+            (
+                6371 * acos(
+                    cos(radians(?)) *
+                    cos(radians(restaurants.lat)) *
+                    cos(radians(restaurants.lng) - radians(?)) +
+                    sin(radians(?)) *
+                    sin(radians(restaurants.lat))
+                )
+            ) AS distance
         ", [$driverLat, $driverLng, $driverLat])
         ->having('distance', '<=', 3)
-        ->whereNull('delivery_id')
-        ->where('status', 'ready_to_receive');
-
-    return $query;
+        ->orderBy('distance');
 }
 
 

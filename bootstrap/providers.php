@@ -2,8 +2,8 @@
 
 return [
     App\Providers\AppServiceProvider::class,
+    App\Providers\EventServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
-    App\Providers\Filament\CustomerPanelProvider::class,
     App\Providers\Filament\DriverPanelProvider::class,
     App\Providers\Filament\RestaurantPanelProvider::class,
 ];
