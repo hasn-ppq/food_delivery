@@ -35,19 +35,12 @@ class RestaurantForm
            ViewField::make('map')
               ->label('تحديد موقع المطعم')
               ->view('forms.leaflet-picker')
-            ->columnSpanFull(),
+              ->columnSpanFull(),
 
-        Hidden::make('lat')
-            
-            ->required()
-            ,
-
-       Hidden ::make('lng')
-           
-            ->required()
-            ,
-    
-
+            Hidden::make('lat')
+              ->required(),
+            Hidden ::make('lng')
+              ->required(),
             Select::make('status')
                 ->options([
                     'open' => 'Open',

@@ -16,6 +16,7 @@ class Order extends Model
     'delivery_price',
     'payment_method',
     'payment_status',
+    'previous_status',
     'status',
     'customer_address',
     'customer_lat',

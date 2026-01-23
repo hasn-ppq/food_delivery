@@ -10,7 +10,7 @@ use App\Models\Restaurant;
 use App\Models\Meal;
 use App\Models\OrderItem;
 use Carbon\Carbon;
-
+use App\Events\OrderStatusChanged;
 
 use Illuminate\Support\Facades\DB;
 
@@ -118,7 +118,7 @@ class OrderController extends Controller
     }
     public function myOrders()
 {
-    $user = auth::user();
+    $user = Auth::user();
 
     $orders = Order::with(['restaurant:id,name', 'items'])
         ->where('customer_id', $user->id)
@@ -171,10 +171,14 @@ public function show(Order $order)
     }
 
     // إلغاء الطلب
+    $oldStatus = $order->status;
     $order->update([
         'status' => 'canceled',
         'canceled_reason' => 'Canceled by customer',
     ]);
+
+    // إرسال حدث تغيير حالة الطلب
+    event(new OrderStatusChanged($order, $oldStatus, 'canceled'));
 
     return response()->json([
         'message' => 'تم إلغاء الطلب بنجاح'

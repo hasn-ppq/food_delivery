@@ -24,12 +24,18 @@ class DriverPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+        
             ->id('driver')
             ->login()
+            ->authGuard('web')
             ->path('driver')
             ->colors([
                 'primary' => Color::Amber,
             ])
+               ->databaseNotifications()
+               ->broadcasting()
+               
+              
             ->discoverResources(in: app_path('Filament/Driver/Resources'), for: 'App\Filament\Driver\Resources')
             ->discoverPages(in: app_path('Filament/Driver/Pages'), for: 'App\Filament\Driver\Pages')
             ->pages([
@@ -55,6 +61,8 @@ class DriverPanelProvider extends PanelProvider
                 Authenticate::class,
                  'auth',
                 'role:delivery',
+                  'active'
+                
             ]);
     }
 }

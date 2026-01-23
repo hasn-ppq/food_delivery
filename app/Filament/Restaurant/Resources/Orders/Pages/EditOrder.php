@@ -9,7 +9,7 @@ use Filament\Resources\Pages\EditRecord;
 class EditOrder extends EditRecord
 {
     protected static string $resource = OrderResource::class;
-    protected function getFormActions(): array
+    protected function getHeaderActions(): array
 {
     return [
         Action::make('back')

@@ -14,8 +14,10 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-
+use Filament\Notifications\Notification;
 use Filament\Tables\Table;
+use App\Models\Restaurant;
+use App\Models\User;
 
 
 
@@ -46,8 +48,22 @@ class MealResource extends Resource
 
 public static function getEloquentQuery(): Builder
 {
+    $user = Auth::user();
+    $restaurant = $user->restaurants;
+
+    if (!$restaurant) {
+        // إشعار
+        Notification::make()
+            ->title('يرجى إضافة مطعم أولاً')
+            ->warning()
+            ->send();
+
+        // منع عرض أي بيانات
+        return parent::getEloquentQuery()->whereRaw('1 = 0');
+    }
+
     return parent::getEloquentQuery()
-        ->where('restaurant_id', Auth::user()->restaurants->id);
+        ->where('restaurant_id', $restaurant->id);
 }
 
 

@@ -10,6 +10,10 @@ use App\Models\Order;
 use Filament\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use App\Events\OrderStatusChanged;
+
+
 
 class MyOrdersTable
 {
@@ -18,11 +22,11 @@ class MyOrdersTable
         return $table
             ->columns([
                  
-                 TextColumn::make('id')
+             TextColumn::make('id')
                 ->label('رقم الطلب')
                 ->sortable(),
 
-            TextColumn::make('status')
+             TextColumn::make('status')
                 ->label('الحالة')
                 ->badge()
                 ->colors([
@@ -31,21 +35,27 @@ class MyOrdersTable
                     'danger'  => 'canceled',
                 ]),
 
-            TextColumn::make('customer_address')
+             TextColumn::make('customer_address')
                 ->label('عنوان الزبون')
                 ->wrap(),
-                TextColumn::make('restaurant.address')
+             TextColumn::make('restaurant.address')
                 ->label('عنوان المطعم')
                 ->wrap(),
 
-            TextColumn::make('total_price')
+             TextColumn::make('total_price')
                 ->label('المبلغ')
                 ->money('IQD'),
+             TextColumn::make('delivery_price')->label('سعر التوصيل')
         
             ])
             ->filters([
-                //
-            ])
+                SelectFilter::make('status')
+                ->label('حالة الطلب')
+                ->options([
+                    'on_the_way' => 'بالطريق',
+                    'delivered' => 'تم التوصيل',
+                ]),
+        ])
             ->recordActions([
                Action::make('track')
             ->label('تتبع موقع الزبون')
@@ -67,19 +77,24 @@ class MyOrdersTable
             ->label('تم التوصيل')
             ->color('success')
             ->requiresConfirmation()
-            ->action(fn (Order $record) =>
-                $record->update([
-                    'status' => 'delivered',
-                    'delivered_at' => now(),
-                ])
-            )
+           ->action(function (Order $record) {
+
+        $oldStatus = $record->status;
+
+        $record->update([
+            'previous_status' => $oldStatus,
+            'status' => 'delivered',
+        ]);
+
+        event(new OrderStatusChanged(
+            $record,
+            $oldStatus,
+            'delivered'
+        ));
+    })
             ->visible(fn (Order $record) => $record->status === 'on_the_way'),
     
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+           ;
     }
 }

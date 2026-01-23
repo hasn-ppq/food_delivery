@@ -16,7 +16,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Filament\Facades\Filament;
+use Carbon\Carbon;
 use App\Filament\Restaurant\Resources\Orders\RelationManagers\OrderItemRelationManager;
+
 
 class OrderResource extends Resource
 {
@@ -25,6 +27,7 @@ class OrderResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'id';
+    
 
     public static function form(Schema $schema): Schema
     {
@@ -44,7 +47,22 @@ class OrderResource extends Resource
         ];
     }
     
-   
+   public static function getEloquentQuery(): Builder
+{
+    $ownerId = Auth::id();
+
+    $restaurantIds = \App\Models\Restaurant::where('owner_id', $ownerId)->pluck('id');
+
+    $query = parent::getEloquentQuery()
+        ->whereIn('restaurant_id', $restaurantIds);
+
+    if ($status = request()->query('status')) {
+        $query->where('status', $status);
+    }
+
+    return $query->orderByDesc('created_at');
+}
+
 
     
 
