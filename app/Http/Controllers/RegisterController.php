@@ -14,22 +14,22 @@ class RegisterController extends Controller
             'name'     => 'required|string',
             'email'    => 'required|email',
             'phone'    => 'required',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:6|confirmed',
             'role_id'  => 'required|exists:roles,id',
         ],
           [
-        'password.min' => 'كلمة المرور يجب أن تكون 8 رموز أو أكثر',
+        'password.min' => 'كلمة المرور يجب أن تكون 6 رموز أو أكثر',
         'password.confirmed' => 'كلمتا المرور غير متطابقتين',
     ]);
 
-        // 🔍 تحقق هل المستخدم موجود
+        //  تحقق هل المستخدم موجود
         $user = User::where('email', $request->email)
             ->orWhere('phone', $request->phone)
             ->first();
 
         if ($user) {
 
-            // 🕒 مسجل وينتظر الموافقة
+            //  مسجل وينتظر الموافقة
             if (! $user->is_active) {
                 return redirect()->back()->with(
                     'info',

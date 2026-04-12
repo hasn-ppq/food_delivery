@@ -20,6 +20,11 @@ class RestaurantSeeder extends Seeder
         // Get the owner user
         $owner = User::where('email', 'owner@example.com')->first();
 
+        // Skip if owner doesn't exist
+        if (!$owner) {
+            return;
+        }
+
         // Create a restaurant associated with the owner
         $restaurant = Restaurant::create([
             'owner_id' => $owner->id,

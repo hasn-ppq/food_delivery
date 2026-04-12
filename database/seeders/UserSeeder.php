@@ -14,17 +14,23 @@ class UserSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-
     {
-         $adminRole = Role::where('slug', 'admin')->first();
+        $adminRole = Role::where('slug', 'admin')->first();
         User::create([
-        'name' => 'Admin User',
-        'phone' => '07700000000',
-        'email' => 'admin@example.com',
-        'password' => Hash::make('password'),
-       'role_id' => $adminRole->id,
-    ]);
+            'name' => 'Admin User',
+            'phone' => '07700000000',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'role_id' => $adminRole->id,
+        ]);
 
-    
+        $ownerRole = Role::where('slug', 'owner')->first();
+        User::create([
+            'name' => 'Restaurant Owner',
+            'phone' => '07733333333',
+            'email' => 'owner@example.com',
+            'password' => Hash::make('password'),
+            'role_id' => $ownerRole->id,
+        ]);
     }
 }

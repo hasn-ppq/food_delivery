@@ -2,25 +2,47 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Order;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Restaurant;
-use App\Models\Meal;
-use App\Models\OrderItem;
-use Carbon\Carbon;
 use App\Events\OrderStatusChanged;
-
+use App\Http\Controllers\Controller;
+use App\Models\Meal;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Restaurant;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     public function store(Request $request)
     {
-        $user = Auth::user(); // الكاستمر
+        $user = Auth::user();
 
-        // 2️⃣ Validation
+        $missingProfileFields = [];
+        if (!$user->name || trim((string) $user->name) === '') {
+            $missingProfileFields[] = 'name';
+        }
+
+        if (!$user->phone || trim((string) $user->phone) === '') {
+            $missingProfileFields[] = 'phone';
+        }
+
+        if (is_null($user->lat)) {
+            $missingProfileFields[] = 'lat';
+        }
+
+        if (is_null($user->lng)) {
+            $missingProfileFields[] = 'lng';
+        }
+
+        if (!empty($missingProfileFields)) {
+            return response()->json([
+                'message' => 'Please complete your profile information before placing an order.',
+                'profile_incomplete' => true,
+                'missing_fields' => $missingProfileFields,
+            ], 422);
+        }
+
         $request->validate([
             'restaurant_id' => 'required|exists:restaurants,id',
             'items' => 'required|array|min:1',
@@ -32,22 +54,19 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // 3️⃣ تحقق المطعم
         $restaurant = Restaurant::where('id', $request->restaurant_id)
             ->where('status', 'open')
             ->first();
 
         if (!$restaurant) {
             return response()->json([
-                'message' => 'المطعم غير متاح حالياً'
+                'message' => 'Restaurant is not available now.',
             ], 422);
         }
 
         DB::beginTransaction();
 
         try {
-
-            // 4️⃣ إنشاء الطلب
             $order = Order::create([
                 'customer_id' => $user->id,
                 'restaurant_id' => $restaurant->id,
@@ -63,16 +82,14 @@ class OrderController extends Controller
 
             $totalPrice = 0;
 
-            // 5️⃣ إضافة الوجبات
             foreach ($request->items as $item) {
-
                 $meal = Meal::where('id', $item['meal_id'])
                     ->where('restaurant_id', $restaurant->id)
                     ->where('status', 'active')
                     ->first();
 
                 if (!$meal) {
-                    throw new \Exception('وجبة غير صالحة');
+                    throw new \Exception('Invalid meal item.');
                 }
 
                 $price = $meal->discount_price ?? $meal->price;
@@ -80,123 +97,120 @@ class OrderController extends Controller
                 $totalPrice += $itemTotal;
 
                 OrderItem::create([
-                     'order_id' => $order->id,
-                     'meal_id' => $meal->id,
-                     'meal_name' => $meal->name,
-                     'quantity' => $item['quantity'],
-                     'price' => $price,
-                     'total' => $itemTotal,
+                    'order_id' => $order->id,
+                    'meal_id' => $meal->id,
+                    'meal_name' => $meal->name,
+                    'quantity' => $item['quantity'],
+                    'price' => $price,
+                    'total' => $itemTotal,
                 ]);
             }
-                 if ($totalPrice < $restaurant->min_order_price) {
-                     throw new \Exception('الحد الأدنى للطلب هو ' . $restaurant->min_order_price);
-                 }
+
+            if ($totalPrice < $restaurant->min_order_price) {
+                throw new \Exception('Minimum order is ' . $restaurant->min_order_price);
+            }
+
             $totalPrice += $restaurant->delivery_price_default;
-            // 6️⃣ تحديث السعر النهائي
+
             $order->update([
-                 'total_price' => $totalPrice,
-                 'delivery_price' => $restaurant->delivery_price_default,
+                'total_price' => $totalPrice,
+                'delivery_price' => $restaurant->delivery_price_default,
             ]);
 
             DB::commit();
 
             return response()->json([
-                'message' => 'تم إنشاء الطلب بنجاح',
+                'message' => 'Order created successfully.',
                 'order_id' => $order->id,
                 'status' => $order->status,
-                'total_price' => $order->total_price
+                'total_price' => $order->total_price,
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
-                'message' => 'فشل إنشاء الطلب',
-                'error' => $e->getMessage()
+                'message' => 'Failed to create order.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
     public function myOrders()
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $orders = Order::with(['restaurant:id,name', 'items'])
-        ->where('customer_id', $user->id)
-        ->whereNotIn('status', ['delivered', 'canceled'])
-        ->orderBy('created_at', 'desc')
-        ->get();
+        $orders = Order::with(['restaurant:id,name', 'items'])
+            ->where('customer_id', $user->id)
+            ->whereNotIn('status', ['delivered', 'canceled'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    return response()->json([
-        'orders' => $orders
-    ]);
-}
-public function show(Order $order)
-{
-    $user = auth::user();
-
-    // تأكد انه الطلب يخص هذا الكاستمر
-    if ($order->customer_id !== $user->id) {
         return response()->json([
-            'message' => 'غير مصرح'
-        ], 403);
+            'orders' => $orders,
+        ]);
     }
 
-    // تحميل العلاقات
-    $order->load([
-        'restaurant:id,name,address,lat,lng',
-        'items'
-    ]);
+    public function show(Order $order)
+    {
+        $user = Auth::user();
 
-    return response()->json([
-        'order' => $order
-    ]);
-}
+        if ($order->customer_id !== $user->id) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 403);
+        }
 
-  public function cancel(Order $order)
-{
-    $user = auth::user();
+        $order->load([
+            'restaurant:id,name,address,lat,lng',
+            'items',
+        ]);
 
-    // تأكدالطلب إله
-    if ( $order->customer_id !== $user->id) {
         return response()->json([
-            'message' => 'غير مصرح'
-        ], 403);
+            'order' => $order,
+        ]);
     }
 
-    // تحقق من حالة الطلب
-    if (!in_array($order->status, ['pending', 'accepted'])) {
+    public function cancel(Order $order)
+    {
+        $user = Auth::user();
+
+        if ($order->customer_id !== $user->id) {
+            return response()->json([
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        if (!in_array($order->status, ['pending', 'accepted'])) {
+            return response()->json([
+                'message' => 'Cannot cancel order at this stage.',
+            ], 422);
+        }
+
+        $oldStatus = $order->status;
+        $order->update([
+            'status' => 'canceled',
+            'canceled_reason' => 'Canceled by customer',
+        ]);
+
+        event(new OrderStatusChanged($order, $oldStatus, 'canceled'));
+
         return response()->json([
-            'message' => 'لا يمكن إلغاء الطلب في هذه المرحلة'
-        ], 422);
+            'message' => 'Order canceled successfully.',
+        ]);
     }
 
-    // إلغاء الطلب
-    $oldStatus = $order->status;
-    $order->update([
-        'status' => 'canceled',
-        'canceled_reason' => 'Canceled by customer',
-    ]);
+    public function myOrdersHistory()
+    {
+        $user = Auth::user();
 
-    // إرسال حدث تغيير حالة الطلب
-    event(new OrderStatusChanged($order, $oldStatus, 'canceled'));
+        $orders = Order::with(['restaurant:id,name', 'items'])
+            ->where('customer_id', $user->id)
+            ->whereIn('status', ['delivered', 'canceled'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    return response()->json([
-        'message' => 'تم إلغاء الطلب بنجاح'
-    ]);
-}
-public function myOrdersHistory()
-{
-    $user = auth::user();
-
-    $orders = Order::with(['restaurant:id,name', 'items'])
-        ->where('customer_id', $user->id)
-        ->whereIn('status', ['delivered', 'canceled'])
-        ->orderBy('created_at', 'desc')
-        ->get();
-
-    return response()->json([
-        'orders' => $orders
-    ]);
-}
-
+        return response()->json([
+            'orders' => $orders,
+        ]);
+    }
 }

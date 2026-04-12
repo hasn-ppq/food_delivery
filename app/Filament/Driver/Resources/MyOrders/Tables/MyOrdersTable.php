@@ -34,6 +34,7 @@ class MyOrdersTable
                     'success' => 'delivered',
                     'danger'  => 'canceled',
                 ]),
+                
 
              TextColumn::make('customer_address')
                 ->label('عنوان الزبون')
@@ -45,7 +46,8 @@ class MyOrdersTable
              TextColumn::make('total_price')
                 ->label('المبلغ')
                 ->money('IQD'),
-             TextColumn::make('delivery_price')->label('سعر التوصيل')
+             TextColumn::make('delivery_price')->label('سعر التوصيل'),
+                TextColumn::make('customer.phone')->label('رقم الهاتف'),
         
             ])
             ->filters([
