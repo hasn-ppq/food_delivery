@@ -3,7 +3,12 @@ FROM php:8.2-cli
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-    git unzip curl libpng-dev libonig-dev libxml2-dev zip nodejs npm
+    git unzip curl zip libzip-dev libpng-dev libonig-dev libxml2-dev libicu-dev nodejs npm
+
+# PHP extensions المهمة
+RUN docker-php-ext-install \
+    intl \
+    zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
