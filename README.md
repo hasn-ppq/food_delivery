@@ -1,61 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Food Delivery App 🍕🚚
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive Laravel-based food delivery platform with multi-role user support, real-time notifications, location-aware delivery, and Filament-powered admin panels.
 
-## About Laravel
+## Table of Contents
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. [Overview](#overview)
+2. [Key Features](#key-features)
+3. [Tech Stack](#tech-stack)
+4. [Installation](#installation)
+5. [Configuration](#configuration)
+6. [Usage](#usage)
+7. [API Endpoints](#api-endpoints)
+8. [Contributing](#contributing)
+9. [License](#license)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Overview
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+This project is a food delivery backend that supports customers, restaurants, drivers, and administrators. It includes:
 
-## Learning Laravel
+- Role-based access control
+- OTP authentication
+- Restaurant menus and orders
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Order lifecycle management with status updates
+- FCM push notifications and background job handling
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Key Features
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### User Management
 
-## Laravel Sponsors
+- Multi-role users: Customer, Restaurant Owner, Driver, Admin
+- OTP-based login and verification
+- Device token registration for push notifications
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Restaurant & Menu
 
-### Premium Partners
+- Restaurant profiles with locations and delivery settings
+- Meal management with pricing, discounts, and media
+- Restaurant menu browsing and order placement
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Order Processing
+
+- Full order lifecycle: pending → cooking → ready → on the way → delivered
+- Automatic cancellation for stale pending orders
+- Order details, status updates, and customer tracking
+
+### Notifications & Real-Time
+
+- Firebase Cloud Messaging (FCM) notifications
+- Order status notifications for relevant users
+- Driver assignment based on proximity to the restaurant
+- Event-driven notifications using Laravel events and listeners
+
+### Admin Experience
+
+- Filament-powered admin area
+- Separate admin, restaurant, and driver dashboards
+- Order and user management from the admin UI
+
+## Tech Stack
+
+- Backend: Laravel 12
+- PHP: 8.2+
+- Frontend tools: Vite, Node.js
+- Authentication/API: Laravel Sanctum
+- Notifications: Firebase Cloud Messaging
+- Real-time: Laravel Reverb
+- Admin UI: Filament 4
+
+## Installation
+
+```bash
+git clone https://github.com/hasn-ppq/food_delivery.git
+cd food_delivery
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+npm run build
+php artisan serve
+```
+
+## Configuration
+
+1. Copy `.env.example` to `.env`.
+2. Set database credentials.
+3. Configure FCM and Firebase credentials.
+4. Set mail and queue driver settings if needed.
+
+## Usage
+
+### Web Interfaces
+
+- Admin panel: `/admin`
+- Restaurant panel: `/restaurant`
+- Driver panel: `/driver`
+
+### Development commands
+
+```bash
+npm run dev
+php artisan optimize:clear
+php artisan queue:work
+```
+
+## API Endpoints
+
+### Authentication
+
+- `POST /api/auth/otp/request` — Request OTP
+- `POST /api/auth/otp/verify` — Verify OTP and login
+- `POST /api/device-token` — Register device token
+
+### Orders
+
+- `POST /api/orders` — Create order
+- `GET /api/my-orders` — List active orders
+- `GET /api/orders/{id}` — Order details
+- `POST /api/orders/{id}/cancel` — Cancel order
+
+### Restaurants
+
+- `GET /api/restaurants` — List restaurants
+- `GET /api/restaurants/{id}/meals` — Restaurant meals
+
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Fork the repository
+2. Create a new branch
+3. Commit your changes
+4. Push the branch
+5. Open a pull request
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License.
+
+---
+
+Built with ❤️ using Laravel and Filament
+
+ Admin panel:
+ 
+<img width="1592" height="810" alt="image" src="https://github.com/user-attachments/assets/61bd9134-c27b-4d79-b9bd-0850ec4c490f" />
+
+ Restaurant panel:
+ 
+<img width="1588" height="858" alt="image" src="https://github.com/user-attachments/assets/437afbaa-b804-4586-8a86-778f53842873" />
+
+Driver panel:
+
+<img width="1591" height="650" alt="image" src="https://github.com/user-attachments/assets/c814e65d-e148-4049-8625-455d84421587" />
+
+
+
+## 📬 Contact
+
+- GitHub: https://github.com/hasn-ppq  
+- Email: husseinahmedkhishn@gmail.com  
+- LinkedIn: https://www.linkedin.com/in/hussein-ahmed-khishn/
